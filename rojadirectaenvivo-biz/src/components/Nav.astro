@@ -1,0 +1,22 @@
+---
+// src/components/Nav.astro
+const navLinks = [
+  { href: '/', label: 'Inicio' },
+  { href: '/futbol/', label: 'Fútbol' },
+  { href: '/mlb/', label: 'MLB' },
+  { href: '/nba/', label: 'NBA' },
+  { href: '/nhl/', label: 'NHL' },
+  { href: '/motogp/', label: 'MotoGP' },
+  { href: '/tarjeta-roja/', label: 'Tarjeta Roja' },
+  { href: '/pirlo-tv/', label: 'Pirlo TV' },
+];
+const currentPath = Astro.url.pathname;
+---
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">RojaDirectaEnVivo</a>
+    {navLinks.map(l => (
+      <a href={l.href} class={currentPath === l.href ? 'active' : ''}>{l.label}</a>
+    ))}
+  </div>
+</nav>
