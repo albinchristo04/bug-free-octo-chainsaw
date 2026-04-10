@@ -1,0 +1,28 @@
+---
+// src/pages/404.astro
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import { fetchSiteData } from '../lib/data';
+import { SITE_NAME } from '../lib/config';
+
+const data = await fetchSiteData();
+const todayMatches = data.matches.slice(0, 10);
+---
+<Base title={`Partido no encontrado | ${SITE_NAME}`} description="Este partido ya terminó. Ver partidos en vivo ahora." schema={[]}>
+  <div class="container" style="padding-top:48px;text-align:center">
+    <h1 style="font-size:24px;margin-bottom:8px">Este partido ya terminó</h1>
+    <p style="color:var(--text2);margin-bottom:32px">— pero hay más en vivo ahora</p>
+    <div style="text-align:left">
+      <h2 class="section-title">Partidos en Vivo Ahora</h2>
+      <MatchList matches={todayMatches} groupByLeague={true} />
+    </div>
+    <div style="margin-top:32px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="/">Inicio</a>
+      <a href="/futbol/">Fútbol</a>
+      <a href="/mlb/">MLB</a>
+      <a href="/nba/">NBA</a>
+      <a href="/tarjeta-roja/">Tarjeta Roja TV</a>
+      <a href="/pirlo-tv/">Pirlo TV</a>
+    </div>
+  </div>
+</Base>
