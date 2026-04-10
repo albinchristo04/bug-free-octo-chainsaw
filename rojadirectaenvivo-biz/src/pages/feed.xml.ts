@@ -3,6 +3,10 @@ import type { APIRoute } from 'astro';
 import { fetchSiteData } from '../lib/data';
 import { SITE_URL, SITE_NAME, SITE_TAGLINE } from '../lib/config';
 
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function toRFC2822(isoDate: string, time: string): string {
   const dt = new Date(`${isoDate}T${time}:00Z`);
   return dt.toUTCString();
@@ -11,11 +15,11 @@ function toRFC2822(isoDate: string, time: string): string {
 export const GET: APIRoute = async () => {
   const data = await fetchSiteData();
   const items = data.matches.map(m => `  <item>
-    <title>${m.team1} vs ${m.team2} en Vivo — ${m.league}</title>
+    <title>${esc(m.team1)} vs ${esc(m.team2)} en Vivo — ${esc(m.league)}</title>
     <link>${SITE_URL}/partido/${m.slug}/</link>
     <guid>${SITE_URL}/partido/${m.slug}/</guid>
     <pubDate>${toRFC2822(m.date, m.timeUtc)}</pubDate>
-    <description>Ver ${m.team1} vs ${m.team2} en vivo hoy. ${m.league} en directo gratis. ${m.channels.length} canales disponibles.</description>
+    <description>Ver ${esc(m.team1)} vs ${esc(m.team2)} en vivo hoy. ${esc(m.league)} en directo gratis. ${m.channels.length} canales disponibles.</description>
   </item>`).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

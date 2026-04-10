@@ -3,6 +3,7 @@
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { SITE_URL, SITE_NAME } from '../lib/config';
+import { safeJsonLd } from '../lib/seo';
 import '../styles/global.css';
 
 export interface Props {
@@ -48,7 +49,7 @@ const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
   )}
 
   {schemas.map(s => (
-    <script type="application/ld+json" set:html={JSON.stringify(s)} />
+    <script type="application/ld+json" set:html={safeJsonLd(s)} />
   ))}
 </head>
 <body>

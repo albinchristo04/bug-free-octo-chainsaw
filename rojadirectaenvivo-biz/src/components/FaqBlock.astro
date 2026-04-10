@@ -2,6 +2,7 @@
 // src/components/FaqBlock.astro
 import type { FaqItem } from '../lib/faq';
 import { faqPageSchema } from '../lib/faq';
+import { safeJsonLd } from '../lib/seo';
 
 export interface Props {
   items: FaqItem[];
@@ -19,4 +20,4 @@ const { items } = Astro.props;
     ))}
   </dl>
 </section>
-<script type="application/ld+json" set:html={JSON.stringify(faqPageSchema(items))} />
+<script type="application/ld+json" set:html={safeJsonLd(faqPageSchema(items))} />

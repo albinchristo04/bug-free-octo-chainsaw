@@ -2,38 +2,42 @@
 
 interface TzEntry {
   label: string;
-  offset: number; // hours relative to UTC
+  iana: string;
 }
 
-const TZ_OFFSETS: TzEntry[] = [
-  { label: 'Madrid', offset: +2 },
-  { label: 'ET', offset: -4 },
-  { label: 'CDMX', offset: -5 },
-  { label: 'Bogotá', offset: -5 },
-  { label: 'Buenos Aires', offset: -3 },
-  { label: 'Santiago', offset: -3 },
-  { label: 'Lima', offset: -5 },
+const TZ_LIST: TzEntry[] = [
+  { label: 'Madrid', iana: 'Europe/Madrid' },
+  { label: 'ET', iana: 'America/New_York' },
+  { label: 'CDMX', iana: 'America/Mexico_City' },
+  { label: 'Bogotá', iana: 'America/Bogota' },
+  { label: 'Buenos Aires', iana: 'America/Argentina/Buenos_Aires' },
+  { label: 'Santiago', iana: 'America/Santiago' },
+  { label: 'Lima', iana: 'America/Lima' },
 ];
 
-function addHours(timeHHMM: string, hours: number): string {
-  const [h, m] = timeHHMM.split(':').map(Number);
-  const totalMins = h * 60 + m + hours * 60;
-  const wrapped = ((totalMins % (24 * 60)) + 24 * 60) % (24 * 60);
-  const hh = String(Math.floor(wrapped / 60)).padStart(2, '0');
-  const mm = String(wrapped % 60).padStart(2, '0');
-  return `${hh}:${mm}`;
+function convertTz(utcTime: string, iana: string): string {
+  const [h, m] = utcTime.split(':').map(Number);
+  // Use today's date for the reference so the offset reflects current DST
+  const today = new Date();
+  const ref = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), h, m));
+  return new Intl.DateTimeFormat('es', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: iana,
+  }).format(ref);
 }
 
 // Returns: "21:00 Madrid · 17:00 ET · 16:00 CDMX · ..."
 export function getMatchTimezones(utcTime: string): string {
-  return TZ_OFFSETS.map(tz => `${addHours(utcTime, tz.offset)} ${tz.label}`).join(' · ');
+  return TZ_LIST.map(tz => `${convertTz(utcTime, tz.iana)} ${tz.label}`).join(' · ');
 }
 
 // Returns object for templating individual timezone values
 export function getTimezoneMap(utcTime: string): Record<string, string> {
   const result: Record<string, string> = {};
-  for (const tz of TZ_OFFSETS) {
-    result[tz.label] = addHours(utcTime, tz.offset);
+  for (const tz of TZ_LIST) {
+    result[tz.label] = convertTz(utcTime, tz.iana);
   }
   return result;
 }

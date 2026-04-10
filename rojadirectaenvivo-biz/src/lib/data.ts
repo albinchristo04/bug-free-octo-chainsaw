@@ -100,6 +100,19 @@ export async function fetchSiteData(): Promise<SiteData> {
     }
   }
 
+  // Deduplicate slugs — same two teams can appear twice (doubleheaders)
+  const slugCounts: Record<string, number> = {};
+  for (const match of matches) {
+    slugCounts[match.slug] = (slugCounts[match.slug] ?? 0) + 1;
+  }
+  const slugSeen: Record<string, number> = {};
+  for (const match of matches) {
+    if (slugCounts[match.slug] > 1) {
+      slugSeen[match.slug] = (slugSeen[match.slug] ?? 0) + 1;
+      match.slug = `${match.slug}-${slugSeen[match.slug]}`;
+    }
+  }
+
   const byLeague: Record<string, Match[]> = {};
   const bySport: Record<string, Match[]> = {};
   const byTeam: Record<string, Match[]> = {};

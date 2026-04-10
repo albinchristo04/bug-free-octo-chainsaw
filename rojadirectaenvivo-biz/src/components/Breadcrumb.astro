@@ -1,6 +1,7 @@
 ---
 // src/components/Breadcrumb.astro
 import { breadcrumbSchema } from '../lib/seo';
+import { safeJsonLd } from '../lib/seo';
 import { SITE_URL } from '../lib/config';
 
 export interface Props {
@@ -13,7 +14,7 @@ const schemaItems = items.map(i => ({ name: i.name, url: `${SITE_URL}${i.href}` 
   <a href="/">Inicio</a>
   {items.map(item => <span><a href={item.href}>{item.name}</a></span>)}
 </nav>
-<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema([
+<script type="application/ld+json" set:html={safeJsonLd(breadcrumbSchema([
   { name: 'Inicio', url: SITE_URL + '/' },
   ...schemaItems,
 ]))} />

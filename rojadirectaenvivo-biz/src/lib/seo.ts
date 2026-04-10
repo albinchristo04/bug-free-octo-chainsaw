@@ -2,6 +2,11 @@
 import { SITE_URL, SITE_NAME } from './config';
 import type { Match } from './types';
 
+// Prevent </script> injection in JSON-LD blocks
+export function safeJsonLd(obj: object): string {
+  return JSON.stringify(obj).replace(/</g, '\\u003c');
+}
+
 // ── Title tags ──────────────────────────────────────────────────────────────
 
 export function homeTitle(): string {
