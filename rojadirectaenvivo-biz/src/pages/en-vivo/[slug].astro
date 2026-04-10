@@ -1,0 +1,32 @@
+---
+// src/pages/en-vivo/[slug].astro
+import Base from '../../layouts/Base.astro';
+import Player from '../../components/Player.astro';
+import { fetchSiteData } from '../../lib/data';
+import { SITE_URL, SITE_NAME } from '../../lib/config';
+
+export async function getStaticPaths() {
+  const data = await fetchSiteData();
+  return data.matches.map(match => ({
+    params: { slug: match.slug },
+    props: { match },
+  }));
+}
+
+const { match: m } = Astro.props;
+const canonical = `${SITE_URL}/partido/${m.slug}/`;
+---
+<Base
+  title={`${m.team1} vs ${m.team2} En Vivo — ${m.league} | ${SITE_NAME}`}
+  description={`${m.team1} vs ${m.team2} en vivo. ${m.league} en directo gratis.`}
+  canonical={canonical}
+  schema={[]}
+>
+  <div class="container">
+    <section class="hero">
+      <h1>{m.team1} vs {m.team2} En Vivo — {m.league}</h1>
+    </section>
+    <Player match={m} />
+    <p style="margin-top:12px"><a href={`/partido/${m.slug}/`}>Ver página completa →</a></p>
+  </div>
+</Base>
