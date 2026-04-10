@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import SeoText from '../components/SeoText.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { sportHubTitle, hubMeta, orgSchema, itemListSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+
+const data = await fetchSiteData();
+const matches = data.bySport['futbol'] ?? [];
+const title = sportHubTitle('Fútbol');
+const description = hubMeta('Fútbol', matches.length);
+const faqItems = hubFaqItems('Fútbol', matches);
+const seoText = `Hoy hay ${matches.length} partidos de fútbol en vivo. Champions League, Copa Libertadores, Liga MX, La Liga y más competiciones en directo gratis. Roja Directa Fútbol · Tarjeta Roja TV · Pirlo TV Fútbol. Actualizado: ${data.buildDatetime.slice(0, 10)}.`;
+---
+<Base title={title} description={description} schema={[orgSchema(), itemListSchema('Fútbol', matches)]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'Fútbol', href: '/futbol/' }]} />
+    <section class="hero">
+      <h1>Fútbol En Vivo Hoy — Ver Fútbol Gratis</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos de Fútbol Hoy</h2>
+      <MatchList matches={matches} groupByLeague={true} />
+    </section>
+    <SeoText text={seoText} />
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>

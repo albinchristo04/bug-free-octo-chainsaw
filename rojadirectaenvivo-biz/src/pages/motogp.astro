@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { sportHubTitle, orgSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+
+const data = await fetchSiteData();
+const matches = data.bySport['motogp'] ?? [];
+const faqItems = hubFaqItems('MotoGP', matches);
+---
+<Base title={sportHubTitle('MotoGP')} description={`MotoGP en vivo hoy. Roja Directa MotoGP en directo gratis.`} schema={[orgSchema()]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'MotoGP', href: '/motogp/' }]} />
+    <section class="hero"><h1>MotoGP En Vivo Hoy — Ver MotoGP Gratis</h1></section>
+    <section class="section">
+      <h2 class="section-title">Carreras de MotoGP Hoy</h2>
+      <MatchList matches={matches} groupByLeague={false} />
+    </section>
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>

@@ -1,0 +1,24 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { sportHubTitle, orgSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+
+const data = await fetchSiteData();
+const matches = data.bySport['nhl'] ?? [];
+const faqItems = hubFaqItems('NHL', matches);
+---
+<Base title={sportHubTitle('NHL')} description={`NHL hockey en vivo hoy. ${matches.length} partidos en directo gratis.`} schema={[orgSchema()]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'NHL', href: '/nhl/' }]} />
+    <section class="hero"><h1>NHL En Vivo Hoy — Ver Hockey Gratis</h1></section>
+    <section class="section">
+      <h2 class="section-title">Partidos de NHL Hoy</h2>
+      <MatchList matches={matches} groupByLeague={false} />
+    </section>
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>

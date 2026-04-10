@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import SeoText from '../components/SeoText.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { orgSchema, itemListSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+
+const data = await fetchSiteData();
+const matches = data.bySport['mlb'] ?? [];
+const title = `Béisbol En Vivo — Roja Directa MLB · Tarjeta Roja MLB | RojaDirectaEnVivo`;
+const description = `Béisbol en vivo hoy gratis. Ver MLB en directo. Roja Directa MLB, Tarjeta Roja Béisbol. ${matches.length} partidos disponibles.`;
+const faqItems = hubFaqItems('Béisbol MLB', matches);
+const seoText = `Ver béisbol MLB en vivo gratis. Roja Directa Béisbol, Tarjeta Roja Béisbol — todos los partidos de Major League Baseball en español. ${matches.length} partidos hoy.`;
+---
+<Base title={title} description={description} schema={[orgSchema(), itemListSchema('Béisbol', matches)]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'Béisbol', href: '/beisbol/' }]} />
+    <section class="hero">
+      <h1>Béisbol En Vivo — Ver MLB Gratis en Español</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos de Béisbol Hoy</h2>
+      <MatchList matches={matches} groupByLeague={false} />
+    </section>
+    <SeoText text={seoText} />
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>

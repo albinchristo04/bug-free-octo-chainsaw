@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import SeoText from '../components/SeoText.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { mlbTitle, orgSchema, itemListSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+
+const data = await fetchSiteData();
+const matches = data.bySport['mlb'] ?? [];
+const description = `MLB en vivo hoy. ${matches.length} partidos de béisbol en directo gratis. Roja Directa MLB · Tarjeta Roja MLB · Pirlo TV MLB.`;
+const faqItems = hubFaqItems('MLB', matches);
+const seoText = `Hoy hay ${matches.length} partidos de béisbol MLB en vivo. Roja Directa MLB · Tarjeta Roja MLB · Pirlo TV MLB — todos los partidos de la Major League Baseball en directo gratis.`;
+---
+<Base title={mlbTitle()} description={description} schema={[orgSchema(), itemListSchema('MLB', matches)]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'MLB', href: '/mlb/' }]} />
+    <section class="hero">
+      <h1>MLB En Vivo — Béisbol en Directo Gratis · Roja Directa MLB</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos de MLB Hoy</h2>
+      <MatchList matches={matches} groupByLeague={false} />
+    </section>
+    <SeoText text={seoText} />
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>
