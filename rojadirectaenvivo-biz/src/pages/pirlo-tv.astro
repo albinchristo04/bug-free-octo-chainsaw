@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import SeoText from '../components/SeoText.astro';
+import { fetchSiteData } from '../lib/data';
+import { pirloTvTitle, pirloTvMeta, orgSchema } from '../lib/seo';
+
+const data = await fetchSiteData();
+---
+<Base title={pirloTvTitle()} description={pirloTvMeta(data.matches.length)} schema={[orgSchema()]}>
+  <div class="container">
+    <section class="hero">
+      <h1>Pirlo TV — Fútbol y Deportes en Vivo</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos en Vivo Hoy — Pirlo TV</h2>
+      <MatchList matches={data.matches} groupByLeague={true} />
+    </section>
+    <SeoText text={`Pirlo TV en vivo gratis. ${data.matches.length} partidos disponibles hoy con multiples canales y 4 servidores por canal. Pirlo TV Fútbol · Pirlo TV MLB · Pirlo TV NBA · Pirlotv en directo.`} />
+  </div>
+</Base>

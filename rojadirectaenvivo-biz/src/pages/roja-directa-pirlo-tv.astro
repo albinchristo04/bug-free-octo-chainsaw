@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import { fetchSiteData } from '../lib/data';
+import { rojaDirecPirloTitle, orgSchema } from '../lib/seo';
+
+const data = await fetchSiteData();
+---
+<Base title={rojaDirecPirloTitle()} description={`Roja Directa Pirlo TV en vivo. Ver partidos gratis. ${data.matches.length} partidos disponibles hoy.`} schema={[orgSchema()]}>
+  <div class="container">
+    <section class="hero">
+      <h1>Roja Directa Pirlo TV — Ver Partidos en Vivo</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos Disponibles Hoy</h2>
+      <MatchList matches={data.matches} groupByLeague={true} />
+    </section>
+  </div>
+</Base>
