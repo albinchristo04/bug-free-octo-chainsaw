@@ -1,0 +1,31 @@
+---
+// src/components/MatchList.astro
+import type { Match } from '../lib/types';
+import MatchCard from './MatchCard.astro';
+
+export interface Props {
+  matches: Match[];
+  groupByLeague?: boolean;
+}
+const { matches, groupByLeague = true } = Astro.props;
+
+let groups: { label: string; items: Match[] }[] = [];
+if (groupByLeague) {
+  const map = new Map<string, Match[]>();
+  for (const m of matches) {
+    if (!map.has(m.league)) map.set(m.league, []);
+    map.get(m.league)!.push(m);
+  }
+  groups = [...map.entries()].map(([label, items]) => ({ label, items }));
+} else {
+  groups = [{ label: '', items: matches }];
+}
+---
+{groups.map(g => (
+  <div class="league-group">
+    {g.label && <div class="league-title">{g.label}</div>}
+    <div class="match-list">
+      {g.items.map(m => <MatchCard match={m} />)}
+    </div>
+  </div>
+))}

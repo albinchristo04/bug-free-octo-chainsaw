@@ -1,0 +1,19 @@
+---
+// src/components/MatchCard.astro
+import type { Match } from '../lib/types';
+
+export interface Props {
+  match: Match;
+}
+const { match: m } = Astro.props;
+---
+<a href={`/partido/${m.slug}/`} class="match-card">
+  <div>
+    <div class="match-teams">{m.team1} vs {m.team2}</div>
+    <div class="match-meta">{m.league} · {m.date}</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="match-time">{m.timeUtc} UTC</span>
+    <span class="match-badge">{m.channels.length} canales</span>
+  </div>
+</a>

@@ -1,0 +1,19 @@
+---
+// src/components/Breadcrumb.astro
+import { breadcrumbSchema } from '../lib/seo';
+import { SITE_URL } from '../lib/config';
+
+export interface Props {
+  items: { name: string; href: string }[];
+}
+const { items } = Astro.props;
+const schemaItems = items.map(i => ({ name: i.name, url: `${SITE_URL}${i.href}` }));
+---
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <a href="/">Inicio</a>
+  {items.map(item => <span><a href={item.href}>{item.name}</a></span>)}
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema([
+  { name: 'Inicio', url: SITE_URL + '/' },
+  ...schemaItems,
+]))} />

@@ -1,0 +1,11 @@
+---
+// src/components/TimezoneRow.astro
+import { getMatchTimezones } from '../lib/timezones';
+
+export interface Props {
+  utcTime: string;
+}
+const { utcTime } = Astro.props;
+const tzString = getMatchTimezones(utcTime);
+---
+<p class="tz-row">{tzString}</p>

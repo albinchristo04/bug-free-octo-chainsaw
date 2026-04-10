@@ -1,0 +1,22 @@
+---
+// src/components/FaqBlock.astro
+import type { FaqItem } from '../lib/faq';
+import { faqPageSchema } from '../lib/faq';
+
+export interface Props {
+  items: FaqItem[];
+}
+const { items } = Astro.props;
+---
+<section class="faq">
+  <h2>Preguntas frecuentes</h2>
+  <dl>
+    {items.map(item => (
+      <>
+        <dt>{item.question}</dt>
+        <dd>{item.answer}</dd>
+      </>
+    ))}
+  </dl>
+</section>
+<script type="application/ld+json" set:html={JSON.stringify(faqPageSchema(items))} />

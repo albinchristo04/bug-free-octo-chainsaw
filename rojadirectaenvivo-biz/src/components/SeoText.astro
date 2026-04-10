@@ -1,0 +1,8 @@
+---
+// src/components/SeoText.astro
+export interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+---
+<div class="seo-text">{text}</div>
