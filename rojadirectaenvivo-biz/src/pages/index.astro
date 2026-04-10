@@ -1,17 +1,35 @@
 ---
+// src/pages/index.astro
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import SeoText from '../components/SeoText.astro';
+import { fetchSiteData } from '../lib/data';
+import { homeTitle, homeMeta, websiteSchema, orgSchema } from '../lib/seo';
 
+const data = await fetchSiteData();
+const title = homeTitle();
+const description = homeMeta();
+const seoText = `Ver ${data.matches.length} partidos en vivo hoy gratis. Roja Directa En Vivo, Tarjeta Roja TV y Pirlo TV en un solo lugar. Futbol, MLB, NBA, NHL y más deportes en directo con multiples canales en español, inglés y portugués. Roja Dirécta · Rojadirecta · Tarjeta Roja TV.`;
+
+// Priority sections: MLB first, then futbol, then rest
+const mlbMatches = data.bySport['mlb'] ?? [];
+const futbolMatches = data.bySport['futbol'] ?? [];
+const otherMatches = data.matches.filter(m => m.sportSlug !== 'mlb' && m.sportSlug !== 'futbol');
+const orderedMatches = [...mlbMatches, ...futbolMatches, ...otherMatches];
 ---
+<Base title={title} description={description} schema={[websiteSchema(), orgSchema()]}>
+  <div class="container">
+    <section class="hero">
+      <h1>Partidos en Vivo Hoy — Roja Directa · Tarjeta Roja TV · Pirlo TV</h1>
+      <p>{seoText}</p>
+      <p class="freshness">Actualizado: {data.buildDatetime.replace('T', ' ').slice(0, 16)} UTC</p>
+    </section>
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+    <section class="section">
+      <h2 class="section-title">Partidos de Hoy</h2>
+      <MatchList matches={orderedMatches} groupByLeague={true} />
+    </section>
+
+    <SeoText text={seoText} />
+  </div>
+</Base>

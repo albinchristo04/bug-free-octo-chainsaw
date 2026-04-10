@@ -5,6 +5,47 @@ import { toSlug, getLeagueSlug, getSportSlug, getMatchSlug } from './slugs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+// The actual JSON from rereyano_data.json uses a different shape:
+// { events: [{ date, time, league, teams, channels }] }
+interface RawEventJson {
+  date: string;   // "DD-MM-YYYY"
+  time: string;   // "HH:MM"
+  league: string;
+  teams: string;  // "Team1 - Team2"
+  channels: Array<{ id: string | number; lang: string }>;
+}
+
+function normalizeRawEvent(raw: RawEventJson, index: number): Match {
+  // Parse teams from "Team1 - Team2" format
+  const dashIdx = raw.teams.indexOf(' - ');
+  const team1 = dashIdx !== -1 ? raw.teams.slice(0, dashIdx).trim() : raw.teams;
+  const team2 = dashIdx !== -1 ? raw.teams.slice(dashIdx + 3).trim() : '';
+
+  // Convert date from DD-MM-YYYY to YYYY-MM-DD
+  const dateParts = raw.date.split('-');
+  const isoDate = dateParts.length === 3
+    ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`
+    : raw.date;
+
+  const team1Slug = toSlug(team1);
+  const team2Slug = toSlug(team2);
+
+  return {
+    id: String(index),
+    team1,
+    team2,
+    team1Slug,
+    team2Slug,
+    league: raw.league,
+    leagueSlug: getLeagueSlug(raw.league),
+    sportSlug: getSportSlug(raw.league),
+    date: isoDate,
+    timeUtc: raw.time,
+    slug: getMatchSlug(team1, team2),
+    channels: (raw.channels ?? []).map(c => ({ id: Number(c.id), lang: c.lang })),
+  };
+}
+
 function normalizeMatch(raw: RawMatch): Match {
   const team1Slug = toSlug(raw.team1);
   const team2Slug = toSlug(raw.team2);
@@ -24,24 +65,40 @@ function normalizeMatch(raw: RawMatch): Match {
   };
 }
 
+function parseJsonToMatches(parsed: unknown): Match[] {
+  // Handle { events: [...] } shape (rereyano_data.json format)
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'events' in parsed) {
+    const events = (parsed as { events: RawEventJson[] }).events;
+    if (Array.isArray(events)) {
+      return events.map((e, i) => normalizeRawEvent(e, i));
+    }
+  }
+  // Handle plain array of RawMatch
+  if (Array.isArray(parsed)) {
+    return (parsed as RawMatch[]).map(normalizeMatch);
+  }
+  return [];
+}
+
 export async function fetchSiteData(): Promise<SiteData> {
-  let rawMatches: RawMatch[] = [];
+  let matches: Match[] = [];
 
   try {
     const res = await fetch(DATA_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    rawMatches = await res.json();
+    const parsed = await res.json();
+    matches = parseJsonToMatches(parsed);
+    if (matches.length === 0) throw new Error('Empty remote data');
   } catch {
     // Fallback to local copy
     try {
       const localPath = join(process.cwd(), '..', 'rereyano_data.json');
-      rawMatches = JSON.parse(readFileSync(localPath, 'utf-8'));
+      const parsed = JSON.parse(readFileSync(localPath, 'utf-8'));
+      matches = parseJsonToMatches(parsed);
     } catch {
-      rawMatches = [];
+      matches = [];
     }
   }
-
-  const matches = rawMatches.map(normalizeMatch);
 
   const byLeague: Record<string, Match[]> = {};
   const bySport: Record<string, Match[]> = {};
