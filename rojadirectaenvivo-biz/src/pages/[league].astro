@@ -1,0 +1,51 @@
+---
+// src/pages/[league].astro
+import Base from '../layouts/Base.astro';
+import MatchList from '../components/MatchList.astro';
+import FaqBlock from '../components/FaqBlock.astro';
+import SeoText from '../components/SeoText.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import { fetchSiteData } from '../lib/data';
+import { leagueHubTitle, hubMeta, orgSchema, itemListSchema } from '../lib/seo';
+import { hubFaqItems } from '../lib/faq';
+import { LEAGUE_SLUG_MAP } from '../lib/slugs';
+
+export async function getStaticPaths() {
+  const data = await fetchSiteData();
+  const slugToLeague = Object.fromEntries(
+    Object.entries(LEAGUE_SLUG_MAP).map(([name, slug]) => [slug, name])
+  );
+  return Object.entries(slugToLeague).map(([slug, leagueName]) => ({
+    params: { league: slug },
+    props: { leagueName, matches: data.byLeague[leagueName] ?? [], buildDatetime: data.buildDatetime },
+  }));
+}
+
+const { leagueName, matches, buildDatetime } = Astro.props;
+const leagueSlug = Astro.params.league;
+const title = leagueHubTitle(leagueName);
+const description = hubMeta(leagueName, matches.length);
+const faqItems = hubFaqItems(leagueName, matches);
+const seoText = `${leagueName} en vivo hoy. ${matches.length} partidos disponibles: ${matches.slice(0,3).map(m=>`${m.team1} vs ${m.team2}`).join(', ')}. Todos disponibles en directo gratis. Actualizado ${buildDatetime.slice(0,10)}.`;
+
+// Custom titles for priority leagues
+const customTitles: Record<string, string> = {
+  'liga-mx': 'Liga MX En Vivo Hoy - Ver America, Chivas, Cruz Azul | RojaDirectaEnVivo',
+  'laliga': 'La Liga En Vivo - Ver Real Madrid, Barcelona, Atletico | RojaDirectaEnVivo',
+};
+const finalTitle = customTitles[leagueSlug] ?? title;
+---
+<Base title={finalTitle} description={description} schema={[orgSchema(), itemListSchema(leagueName, matches)]}>
+  <div class="container">
+    <Breadcrumb items={[{ name: 'Fútbol', href: '/futbol/' }, { name: leagueName, href: `/${leagueSlug}/` }]} />
+    <section class="hero">
+      <h1>{leagueName} En Vivo — Partidos Hoy Gratis</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos de {leagueName} Hoy</h2>
+      <MatchList matches={matches} groupByLeague={false} />
+    </section>
+    <SeoText text={seoText} />
+    <FaqBlock items={faqItems} />
+  </div>
+</Base>
