@@ -1,0 +1,70 @@
+---
+// src/pages/partido/[slug].astro
+import Base from '../../layouts/Base.astro';
+import Player from '../../components/Player.astro';
+import FaqBlock from '../../components/FaqBlock.astro';
+import TimezoneRow from '../../components/TimezoneRow.astro';
+import MatchList from '../../components/MatchList.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import SeoText from '../../components/SeoText.astro';
+import { fetchSiteData } from '../../lib/data';
+import { matchTitle, matchMeta, orgSchema, sportsEventSchema } from '../../lib/seo';
+import { matchFaqItems } from '../../lib/faq';
+import { SITE_URL } from '../../lib/config';
+
+export async function getStaticPaths() {
+  const data = await fetchSiteData();
+  return data.matches.map(match => ({
+    params: { slug: match.slug },
+    props: {
+      match,
+      relatedMatches: data.bySport[match.sportSlug]?.filter(m => m.slug !== match.slug).slice(0, 5) ?? [],
+      buildDatetime: data.buildDatetime,
+    },
+  }));
+}
+
+const { match: m, relatedMatches } = Astro.props;
+const faqItems = matchFaqItems(m);
+const title = matchTitle(m);
+const description = matchMeta(m, m.channels.length);
+const seoText = `Ver ${m.team1} vs ${m.team2} en vivo por ${m.league}. El partido comienza a las ${m.timeUtc} UTC del ${m.date}. Disponible en ${m.channels.length} canales con 4 servidores por canal. Transmisión gratis sin registro.`;
+---
+<Base
+  title={title}
+  description={description}
+  canonical={`${SITE_URL}/partido/${m.slug}/`}
+  schema={[orgSchema(), sportsEventSchema(m)]}
+  preconnect="https://bolaloca.my"
+>
+  <div class="container">
+    <Breadcrumb items={[
+      { name: m.sportSlug.charAt(0).toUpperCase() + m.sportSlug.slice(1), href: `/${m.sportSlug}/` },
+      { name: m.league, href: `/${m.leagueSlug}/` },
+      { name: `${m.team1} vs ${m.team2}`, href: `/partido/${m.slug}/` },
+    ]} />
+
+    <section class="hero">
+      <h1>{m.team1} vs {m.team2} en Vivo</h1>
+      <p>{m.league} · {m.date}</p>
+      <TimezoneRow utcTime={m.timeUtc} />
+    </section>
+
+    <Player match={m} />
+
+    <p style="margin-top:12px;color:var(--text2);font-size:13px">
+      También disponible en <a href="/tarjeta-roja/">Tarjeta Roja TV</a> · <a href="/pirlo-tv/">Pirlo TV</a>
+    </p>
+
+    <SeoText text={seoText} />
+
+    <FaqBlock items={faqItems} />
+
+    {relatedMatches.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Más Partidos Hoy</h2>
+        <MatchList matches={relatedMatches} groupByLeague={false} />
+      </section>
+    )}
+  </div>
+</Base>
