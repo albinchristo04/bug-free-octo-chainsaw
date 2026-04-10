@@ -1,0 +1,38 @@
+---
+// src/pages/equipo/[slug].astro
+import Base from '../../layouts/Base.astro';
+import MatchList from '../../components/MatchList.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { fetchSiteData } from '../../lib/data';
+import { teamTitle, orgSchema } from '../../lib/seo';
+
+export async function getStaticPaths() {
+  const data = await fetchSiteData();
+  return Object.entries(data.byTeam).map(([teamSlug, matches]) => ({
+    params: { slug: teamSlug },
+    props: { teamSlug, matches },
+  }));
+}
+
+const { teamSlug, matches } = Astro.props;
+// Recover display name from first match
+const displayName = matches.find(m => m.team1Slug === teamSlug)?.team1
+  ?? matches.find(m => m.team2Slug === teamSlug)?.team2
+  ?? teamSlug;
+---
+<Base
+  title={teamTitle(displayName)}
+  description={`Ver ${displayName} en vivo gratis. ${matches.length} partidos hoy. Roja Directa ${displayName}.`}
+  schema={[orgSchema()]}
+>
+  <div class="container">
+    <Breadcrumb items={[{ name: displayName, href: `/equipo/${teamSlug}/` }]} />
+    <section class="hero">
+      <h1>{displayName} En Vivo — Próximos Partidos</h1>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Partidos de {displayName} Hoy</h2>
+      <MatchList matches={matches} groupByLeague={true} />
+    </section>
+  </div>
+</Base>
