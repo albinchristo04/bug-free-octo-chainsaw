@@ -14,14 +14,16 @@ import { SITE_URL } from '../../lib/config';
 
 export async function getStaticPaths() {
   const data = await fetchSiteData();
-  return data.matches.map(match => ({
-    params: { slug: match.slug },
-    props: {
-      match,
-      relatedMatches: data.bySport[match.sportSlug]?.filter(m => m.slug !== match.slug).slice(0, 5) ?? [],
-      buildDatetime: data.buildDatetime,
-    },
-  }));
+  return data.matches
+    .filter(match => Boolean(match.slug))
+    .map(match => ({
+      params: { slug: match.slug },
+      props: {
+        match,
+        relatedMatches: data.bySport[match.sportSlug]?.filter(m => m.slug && m.slug !== match.slug).slice(0, 5) ?? [],
+        buildDatetime: data.buildDatetime,
+      },
+    }));
 }
 
 const { match: m, relatedMatches } = Astro.props;

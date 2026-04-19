@@ -8,10 +8,12 @@ import { teamTitle, orgSchema } from '../../lib/seo';
 
 export async function getStaticPaths() {
   const data = await fetchSiteData();
-  return Object.entries(data.byTeam).map(([teamSlug, matches]) => ({
-    params: { slug: teamSlug },
-    props: { teamSlug, matches },
-  }));
+  return Object.entries(data.byTeam)
+    .filter(([teamSlug]) => Boolean(teamSlug))
+    .map(([teamSlug, matches]) => ({
+      params: { slug: teamSlug },
+      props: { teamSlug, matches },
+    }));
 }
 
 const { teamSlug, matches } = Astro.props;

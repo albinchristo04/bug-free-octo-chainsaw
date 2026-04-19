@@ -7,10 +7,12 @@ import { SITE_URL, SITE_NAME } from '../../lib/config';
 
 export async function getStaticPaths() {
   const data = await fetchSiteData();
-  return data.matches.map(match => ({
-    params: { slug: match.slug },
-    props: { match },
-  }));
+  return data.matches
+    .filter(match => Boolean(match.slug))
+    .map(match => ({
+      params: { slug: match.slug },
+      props: { match },
+    }));
 }
 
 const { match: m } = Astro.props;

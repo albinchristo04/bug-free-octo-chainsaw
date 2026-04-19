@@ -15,7 +15,11 @@ interface RawEventJson {
   channels: Array<{ id: string | number; lang: string }>;
 }
 
-function normalizeRawEvent(raw: RawEventJson, index: number): Match {
+function hasValidTeams(team1Slug: string, team2Slug: string): boolean {
+  return team1Slug.length > 0 && team2Slug.length > 0;
+}
+
+function normalizeRawEvent(raw: RawEventJson, index: number): Match | null {
   // Parse teams from "Team1 - Team2" format
   const dashIdx = raw.teams.indexOf(' - ');
   const team1 = dashIdx !== -1 ? raw.teams.slice(0, dashIdx).trim() : raw.teams;
@@ -29,6 +33,10 @@ function normalizeRawEvent(raw: RawEventJson, index: number): Match {
 
   const team1Slug = toSlug(team1);
   const team2Slug = toSlug(team2);
+
+  if (!hasValidTeams(team1Slug, team2Slug)) {
+    return null;
+  }
 
   return {
     id: String(index),
@@ -46,9 +54,14 @@ function normalizeRawEvent(raw: RawEventJson, index: number): Match {
   };
 }
 
-function normalizeMatch(raw: RawMatch): Match {
+function normalizeMatch(raw: RawMatch): Match | null {
   const team1Slug = toSlug(raw.team1);
   const team2Slug = toSlug(raw.team2);
+
+  if (!hasValidTeams(team1Slug, team2Slug)) {
+    return null;
+  }
+
   return {
     id: String(raw.id),
     team1: raw.team1,
@@ -70,12 +83,16 @@ function parseJsonToMatches(parsed: unknown): Match[] {
   if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'events' in parsed) {
     const events = (parsed as { events: RawEventJson[] }).events;
     if (Array.isArray(events)) {
-      return events.map((e, i) => normalizeRawEvent(e, i));
+      return events
+        .map((e, i) => normalizeRawEvent(e, i))
+        .filter((match): match is Match => match !== null);
     }
   }
   // Handle plain array of RawMatch
   if (Array.isArray(parsed)) {
-    return (parsed as RawMatch[]).map(normalizeMatch);
+    return (parsed as RawMatch[])
+      .map(normalizeMatch)
+      .filter((match): match is Match => match !== null);
   }
   return [];
 }
